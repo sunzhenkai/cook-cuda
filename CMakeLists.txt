@@ -7,6 +7,6 @@ enable_language(CXX)
 set(CMAKE_CUDA_STANDARD 14)
 include_directories(include)
 
-add_executable(main src/main.cu)
+add_executable(main src/main.cu src/sample/sample_01.cu)
 set_target_properties(main PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 target_link_libraries(main PRIVATE rt cuda)
