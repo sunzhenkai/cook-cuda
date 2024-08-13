@@ -1,7 +1,19 @@
 #include <iostream>
+
+#include "sample/hello_world.cuh"
 #include "sample/utils.cuh"
 
+void f0() {
+  PrintDeviceInfo();
+  hello_world<<<1, 1>>>();
+  hello_world<<<2, 4>>>();
+  print_build_in_vars<<<2, 4>>>();
+  print_3d_grid_vars<<<dim3{2, 2, 1}, dim3{3, 2, 1}>>>();
+
+  cudaDeviceSynchronize();  // 同步等待 GPU 执行核函数
+}
+
 int main() {
-    PrintDeviceInfo();
-    return 0;
+  f0();
+  return 0;
 }

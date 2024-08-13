@@ -1,0 +1,11 @@
+{
+  "name": "cook-cuda",
+  "version": "0.0.1",
+  "dependencies": [
+    "spdlog",
+    "fmt",
+    "gtest"
+  ],
+  "overrides": [
+  ]
+}

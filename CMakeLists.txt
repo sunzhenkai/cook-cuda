@@ -7,6 +7,11 @@ enable_language(CXX)
 set(CMAKE_CUDA_STANDARD 14)
 include_directories(include)
 
-add_executable(main src/main.cu src/sample/sample_01.cu)
+find_package(fmt CONFIG REQUIRED)
+
+file(GLOB_RECURSE SRCS
+        src/sample/*.cu)
+
+add_executable(main src/main.cu ${SRCS})
 set_target_properties(main PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-target_link_libraries(main PRIVATE rt cuda)
+target_link_libraries(main PRIVATE fmt::fmt rt cuda)
