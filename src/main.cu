@@ -14,7 +14,10 @@ void f0() {
   get_set_device();
 }
 
-void f1() { host::matrix_sum_entry(); }
+void f1() {
+  host::matrix_sum_entry();
+  device::matrix_sum_entry();
+}
 
 int main() {
   //  f0();

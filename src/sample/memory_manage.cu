@@ -40,3 +40,30 @@ __host__ void matrix_sum_entry() {
   free(p_b);
 }
 }  // namespace host
+
+namespace device {
+__device__ void matrix_sum(float *dest, float *a, float *b, size_t len) {}
+
+__host__ void matrix_sum_entry() {
+  // 1. 分配主机内存
+  size_t byte_size = ELEMENT_COUNT * sizeof(float);
+  float *p_h_dest, *p_h_a, *p_h_b;
+  p_h_dest = (float *)malloc(byte_size);
+  p_h_a = (float *)malloc(byte_size);
+  p_h_b = (float *)malloc(byte_size);
+
+  // 2. 分配设备内存
+  float *p_d_dest, *p_d_a, *p_d_b;
+  cudaMalloc((float **)&p_h_dest, byte_size);
+  cudaMalloc((float **)&p_h_a, byte_size);
+  cudaMalloc((float **)&p_h_b, byte_size);
+
+  // 3. 初始化主机数据
+  host::random_data(p_h_dest, byte_size);
+  host::random_data(p_h_a, byte_size);
+  host::random_data(p_h_b, byte_size);
+
+  // 4. 从主机拷贝数据到设备
+  cudaMemcpy(p_h_a, p_d_a, byte_size, cudaMemcpyHostToDevice);
+}
+}  // namespace device
