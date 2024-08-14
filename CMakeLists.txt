@@ -17,11 +17,12 @@ cuda_select_nvcc_arch_flags(ARCH_FLAGS 7.5 8.9)
 list(APPEND CUDA_NVCC_FLAGS ${ARCH_FLAGS})
 message(STATUS "CUDA_NVCC_FLAGS=${CUDA_NVCC_FLAGS}")
 
-include_directories(include)
+include_directories(src)
 
 find_package(fmt CONFIG REQUIRED)
 
 file(GLOB_RECURSE SRCS
+        src/utils/*.cu
         src/sample/*.cu)
 
 add_executable(main src/main.cu ${SRCS})
