@@ -17,3 +17,16 @@ __global__ void print_3d_grid_vars() {
       gridDim.x, gridDim.y, gridDim.z, blockDim.x, blockDim.y, blockDim.z, blockIdx.x, blockIdx.y, blockIdx.z,
       threadIdx.x, threadIdx.y, threadIdx.z);
 }
+
+__host__ void get_set_device() {
+  int count = 0;
+  auto result = cudaGetDeviceCount(&count);
+  if (result == cudaSuccess) {
+    printf("get device count success. [count=%d]\n", count);
+
+    result = cudaSetDevice(count - 1);
+    if (result == cudaSuccess) {
+      printf("set cuda device success\n");
+    }
+  }
+}

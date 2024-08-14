@@ -11,6 +11,8 @@ void f0() {
   print_3d_grid_vars<<<dim3{2, 2, 1}, dim3{3, 2, 1}>>>();
 
   cudaDeviceSynchronize();  // 同步等待 GPU 执行核函数
+
+  get_set_device();
 }
 
 int main() {
