@@ -9,7 +9,7 @@ __host__ __device__ void Display(const std::vector<float> &v) {
 }
 
 __host__ __device__ void Display(const float *f, size_t len) {
-  for (size_t i = 0ul; i < len; ++i) printf("%f", *(f + i));
+  for (size_t i = 0ul; i < len; ++i) printf("%f ", *(f + i));
   printf("\n");
 }
 }  // namespace common
@@ -59,5 +59,18 @@ __device__ uint get_block_idx() {
 __device__ uint get_thread_idx() {
   auto p = blockDim.x * blockDim.y * blockDim.z;
   return get_grid_idx() * p + get_block_idx();
+}
+
+__device__ uint get_total_thread() {
+  return (gridDim.x * gridDim.y * gridDim.z) * (blockDim.x * blockDim.y * blockDim.z);
+}
+
+__device__ void get_task_range(uint *start, uint *end, uint len) {
+  uint total_thread = get_total_thread();
+  uint segment_length = len / total_thread;
+  uint idx = device::get_thread_idx();
+  //  printf("> %u %u %u [%u]\n", total_thread, segment_length, idx, len);
+  *start = idx * segment_length;
+  *end = (idx == total_thread - 1) ? len : (idx + 1) * segment_length;
 }
 }  // namespace device

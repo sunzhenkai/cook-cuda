@@ -3,7 +3,7 @@
 #include "memory_manage.cuh"
 #include "utils/utils.cuh"
 
-#define ELEMENT_COUNT 100000
+#define ELEMENT_COUNT 100
 
 namespace host {
 __host__ void matrix_sum(float *dest, float *a, float *b, size_t len) {
@@ -45,8 +45,14 @@ __host__ void matrix_sum_entry() {
 
 namespace device {
 __global__ void matrix_sum(float *dest, float *a, float *b, size_t len) {
-  size_t start_segment = blockIdx.x * blockDim.x;
-  size_t start_idx = len / (gridDim.x * blockDim.x);
+  uint start, end;
+  get_task_range(&start, &end, len);
+  //  printf("%u, [%u, %u]\n", get_thread_idx(), start, end);
+
+  for (uint i = start; i < end; ++i) {
+    dest[i] = a[i] + b[i];
+    //    printf("%f = %f + %f\n", dest[i], a[i], b[i]);
+  }
 }
 
 __host__ void matrix_sum_entry() {
@@ -69,11 +75,13 @@ __host__ void matrix_sum_entry() {
   memset(p_h_dest, 0, byte_size);
   host::random_data(p_h_a, ELEMENT_COUNT);
   host::random_data(p_h_b, ELEMENT_COUNT);
+  //  common::Display(p_h_a, 10);
+  //  common::Display(p_h_b, 10);
 
   // 4. 从主机拷贝数据到设备
   cudaMemset(p_d_dest, 0, byte_size);
-  cudaMemcpy(p_h_a, p_d_a, byte_size, cudaMemcpyHostToDevice);
-  cudaMemcpy(p_h_b, p_h_b, byte_size, cudaMemcpyHostToDevice);
+  cudaMemcpy(p_d_a, p_h_a, byte_size, cudaMemcpyHostToDevice);
+  cudaMemcpy(p_d_b, p_h_b, byte_size, cudaMemcpyHostToDevice);
 
   // 5. 调用核函数计算
   matrix_sum<<<2, 5>>>(p_d_dest, p_d_a, p_d_b, ELEMENT_COUNT);
