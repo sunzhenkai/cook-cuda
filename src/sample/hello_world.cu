@@ -15,7 +15,7 @@ __global__ void print_3d_grid_vars() {
       "blockDim.[x=%d, y=%d, z=%d], "
       "blockIdx.[x=%d, y=%d, z=%d], "
       "threadIdx.[x=%d, y=%d, z=%d]\n",
-      device::get_thread_idx(),         //
+      device::get_thread_idx(),            //
       gridDim.x, gridDim.y, gridDim.z,     //
       blockDim.x, blockDim.y, blockDim.z,  //
       blockIdx.x, blockIdx.y, blockIdx.z,  //
@@ -33,4 +33,17 @@ __host__ void get_set_device() {
       printf("set cuda device success\n");
     }
   }
+}
+
+__host__ cudaError_t error_check(cudaError_t err, const char *fn, int line) {
+  if (err != cudaSuccess) {
+    printf("CUDA error:\r\ncode=%d, name=%s, description=%s, \r\nfile=%s, line=%d\r\n", err, cudaGetErrorName(err),
+           cudaGetErrorString(err), fn, line);
+  }
+  return err;
+}
+
+__host__ void error_check_entry() {
+  int device_id_in_use;
+  error_check(cudaGetDevice(&device_id_in_use), __FILE__, __LINE__);
 }
