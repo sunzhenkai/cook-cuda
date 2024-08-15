@@ -14,4 +14,8 @@ __host__ std::vector<std::string> GetDevices();
 __host__ void PrintDeviceInfo();
 }  // namespace host
 
-namespace device {}
+namespace device {
+__device__ uint get_grid_idx();
+__device__ uint get_block_idx();
+__device__ uint get_thread_idx();
+}

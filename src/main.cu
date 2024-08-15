@@ -20,7 +20,7 @@ void f1() {
 }
 
 int main() {
-  //  f0();
-  f1();
+    f0();
+//  f1();
   return 0;
 }

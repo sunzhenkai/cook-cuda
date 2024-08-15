@@ -1,3 +1,5 @@
+#include <assert.h>
+
 #include "memory_manage.cuh"
 #include "utils/utils.cuh"
 
@@ -42,9 +44,14 @@ __host__ void matrix_sum_entry() {
 }  // namespace host
 
 namespace device {
-__device__ void matrix_sum(float *dest, float *a, float *b, size_t len) {}
+__global__ void matrix_sum(float *dest, float *a, float *b, size_t len) {
+  size_t start_segment = blockIdx.x * blockDim.x;
+  size_t start_idx = len / (gridDim.x * blockDim.x);
+}
 
 __host__ void matrix_sum_entry() {
+  assert(cudaSetDevice(0) == cudaSuccess);
+
   // 1. 分配主机内存
   size_t byte_size = ELEMENT_COUNT * sizeof(float);
   float *p_h_dest, *p_h_a, *p_h_b;
@@ -54,16 +61,35 @@ __host__ void matrix_sum_entry() {
 
   // 2. 分配设备内存
   float *p_d_dest, *p_d_a, *p_d_b;
-  cudaMalloc((float **)&p_h_dest, byte_size);
-  cudaMalloc((float **)&p_h_a, byte_size);
-  cudaMalloc((float **)&p_h_b, byte_size);
+  cudaMalloc((float **)&p_d_dest, byte_size);
+  cudaMalloc((float **)&p_d_a, byte_size);
+  cudaMalloc((float **)&p_d_b, byte_size);
 
   // 3. 初始化主机数据
-  host::random_data(p_h_dest, byte_size);
-  host::random_data(p_h_a, byte_size);
-  host::random_data(p_h_b, byte_size);
+  memset(p_h_dest, 0, byte_size);
+  host::random_data(p_h_a, ELEMENT_COUNT);
+  host::random_data(p_h_b, ELEMENT_COUNT);
 
   // 4. 从主机拷贝数据到设备
+  cudaMemset(p_d_dest, 0, byte_size);
   cudaMemcpy(p_h_a, p_d_a, byte_size, cudaMemcpyHostToDevice);
+  cudaMemcpy(p_h_b, p_h_b, byte_size, cudaMemcpyHostToDevice);
+
+  // 5. 调用核函数计算
+  matrix_sum<<<2, 5>>>(p_d_dest, p_d_a, p_d_b, ELEMENT_COUNT);
+
+  // 6. 从设备拷贝结果到主机
+  cudaMemcpy(p_h_dest, p_d_dest, byte_size, cudaMemcpyDeviceToHost);
+  common::Display(p_h_dest, 10);
+
+  // 7. 释放内存
+  free(p_h_dest);
+  free(p_h_a);
+  free(p_h_b);
+  cudaFree(p_d_dest);
+  cudaFree(p_d_a);
+  cudaFree(p_d_b);
+
+  cudaDeviceReset();
 }
 }  // namespace device

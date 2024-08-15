@@ -48,3 +48,16 @@ __host__ void PrintDeviceInfo() {
   }
 }
 }  // namespace host
+
+namespace device {
+__device__ uint get_grid_idx() { return blockIdx.z * gridDim.x * gridDim.y + blockIdx.y * gridDim.x + blockIdx.x; }
+
+__device__ uint get_block_idx() {
+  return threadIdx.z * blockDim.x * blockDim.y + threadIdx.y * blockDim.x + threadIdx.x;
+}
+
+__device__ uint get_thread_idx() {
+  auto p = blockDim.x * blockDim.y * blockDim.z;
+  return get_grid_idx() * p + get_block_idx();
+}
+}  // namespace device
