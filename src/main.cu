@@ -19,8 +19,17 @@ void f1() {
   device::matrix_sum_entry();
 }
 
+void f2() {
+  error_check_entry();
+  kernel_error_entry<<<1, 1>>>();
+  error_check(cudaDeviceSynchronize(), __FILE__, __LINE__);
+}
+
+void f3() { device::matrix_sum_entry(); }
+
 int main() {
-//    f0();
-  f1();
+  //    f0();
+  //  f1();
+  f3();
   return 0;
 }

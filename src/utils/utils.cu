@@ -1,16 +1,39 @@
 #include "utils.cuh"
 
 namespace common {
-__host__ __device__ void Display(const std::vector<float> &v) {
+__host__ __device__ void display(const std::vector<float> &v) {
   for (auto t : v) {
     printf("%f ", t);
   }
   printf("\n");
 }
 
-__host__ __device__ void Display(const float *f, size_t len) {
+__host__ __device__ void display(const float *f, size_t len) {
   for (size_t i = 0ul; i < len; ++i) printf("%f ", *(f + i));
   printf("\n");
+}
+
+__host__ __device__ cudaError_t error_check(cudaError_t err, const char *fn, int line) {
+  if (err != cudaSuccess) {
+    printf("CUDA error:\n\tcode=%d, name=%s, description=%s, \n\tfile=%s, line=%d\n", err, cudaGetErrorName(err),
+           cudaGetErrorString(err), fn, line);
+  }
+  return err;
+}
+
+__host__ __device__ void perf_start(cudaEvent_t *start, cudaEvent_t *end) {
+  common::error_check(cudaEventCreate(start), __FILE__, __LINE__);
+  common::error_check(cudaEventCreate(end), __FILE__, __LINE__);
+  common::error_check(cudaEventRecord(*start), __FILE__, __LINE__);
+  cudaEventQuery(*start);
+}
+
+__host__ __device__ void perf_end(float *elapsed_time_ms, cudaEvent_t *start, cudaEvent_t *end) {
+  common::error_check(cudaEventRecord(*end), __FILE__, __LINE__);
+  common::error_check(cudaEventSynchronize(*end), __FILE__, __LINE__);
+  ERROR_CHECK(cudaEventElapsedTime(elapsed_time_ms, *start, *end));
+  ERROR_CHECK(cudaEventDestroy(*start));
+  ERROR_CHECK(cudaEventDestroy(*end));
 }
 }  // namespace common
 

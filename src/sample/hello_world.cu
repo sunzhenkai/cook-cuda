@@ -1,5 +1,6 @@
+#include <cstdio>
+
 #include "hello_world.cuh"
-#include "stdio.h"
 #include "utils/utils.cuh"
 
 __global__ void hello_world() { printf("Hello world from the GPU\n"); }
@@ -35,10 +36,12 @@ __host__ void get_set_device() {
   }
 }
 
-__host__ cudaError_t error_check(cudaError_t err, const char *fn, int line) {
+__host__ __device__ cudaError_t error_check(cudaError_t err, const char *fn, int line) {
   if (err != cudaSuccess) {
-    printf("CUDA error:\r\ncode=%d, name=%s, description=%s, \r\nfile=%s, line=%d\r\n", err, cudaGetErrorName(err),
+    printf("CUDA error:\n\tcode=%d, name=%s, description=%s, \n\tfile=%s, line=%d\n", err, cudaGetErrorName(err),
            cudaGetErrorString(err), fn, line);
+  } else {
+    printf("%s, ok\n", __func__);
   }
   return err;
 }
@@ -46,4 +49,24 @@ __host__ cudaError_t error_check(cudaError_t err, const char *fn, int line) {
 __host__ void error_check_entry() {
   int device_id_in_use;
   error_check(cudaGetDevice(&device_id_in_use), __FILE__, __LINE__);
-}
+  error_check(cudaSetDevice(999), __FILE__, __LINE__);
+  //  char *p_c;
+  //  error_check(cudaMalloc(&p_c, 100), __FILE__, __LINE__);
+
+  cudaDeviceSynchronize();
+} /** output
+error_check, ok
+CUDA error:
+        code=101, name=cudaErrorInvalidDevice, description=invalid device ordinal,
+        file=/data/code/cook-cuda/src/sample/hello_world.cu, line=51
+*/
+
+__global__ void kernel_error_entry() {
+  dim3 block(2048);
+  print_build_in_vars<<<2, block>>>();  // block size 最大 1024
+  error_check(cudaGetLastError(), __FILE__, __LINE__);
+} /** output
+CUDA error:
+        code=9, name=cudaErrorInvalidConfiguration, description=invalid configuration argument,
+        file=/data/code/cook-cuda/src/sample/hello_world.cu, line=67
+*/
